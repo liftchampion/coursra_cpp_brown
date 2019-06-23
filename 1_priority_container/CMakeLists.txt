@@ -5,4 +5,4 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(../dev)
 
-add_executable(1_priority_container main.cpp)
+add_executable(1_priority_container main.cpp priority_container.h)

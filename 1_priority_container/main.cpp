@@ -1,6 +1,7 @@
 #include <iostream>
 #include "profile.h"
 #include "test_runner.h"
+#include "priority_container.h"
 
 int main()
 {
