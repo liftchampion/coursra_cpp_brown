@@ -14,12 +14,37 @@
 #define PRIORITY_CONTAINER_H
 
 #include <utility>
+#include <vector>
+
+template <typename T>
+struct s_collection_data{
+	s_collection_data(int new_idx, T new_val) {
+		id = 0;
+		idx = new_idx;
+		val = new_val;
+	}
+	int	id = 0;
+	int	idx = 0;
+	T	val;
+};
+
+template <typename T>
+bool operator< (const s_collection_data<T>& lhs, const s_collection_data<T>& rhs) {
+	if (lhs.id < rhs.id)
+		return true;
+	if (lhs.id == rhs.id)
+		return lhs.idx < rhs.idx;
+}
 
 template <typename T>
 class PriorityCollection {
 public:
 	using Id = int;
 
+	PriorityCollection() {
+		make_heap(data.begin(), data.end());
+		elements_count = 0;
+	}
 	// Добавить объект с нулевым приоритетом
 	// с помощью перемещения и вернуть его идентификатор
 	Id Add(T object) {
@@ -62,6 +87,8 @@ public:
 	}
 
 private:
+	std::vector<s_collection_data<T>> data;
+	unsigned long long elements_count;
 	// Приватные поля и методы
 };
 
