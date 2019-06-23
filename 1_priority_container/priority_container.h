@@ -15,31 +15,31 @@
 
 #include <utility>
 #include <vector>
+#include <map>
 
-template <typename T>
-struct s_collection_data{
-	s_collection_data(int new_idx, T new_val) {
-		id = 0;
+using Id = unsigned long long int;
+
+struct idx_prior{
+	explicit idx_prior(Id new_idx) {
+		prior = 0;
 		idx = new_idx;
-		val = new_val;
 	}
-	int	id = 0;
-	int	idx = 0;
-	T	val;
+	int	prior = 0;
+	Id	idx = 0;
 };
 
-template <typename T>
-bool operator< (const s_collection_data<T>& lhs, const s_collection_data<T>& rhs) {
-	if (lhs.id < rhs.id)
+bool operator< (const idx_prior& lhs, const idx_prior& rhs) {
+	if (lhs.prior < rhs.prior)
 		return true;
-	if (lhs.id == rhs.id)
+	if (lhs.prior == rhs.prior)
 		return lhs.idx < rhs.idx;
+	return false;
 }
 
 template <typename T>
 class PriorityCollection {
 public:
-	using Id = int;
+
 
 	PriorityCollection() {
 		make_heap(data.begin(), data.end());
@@ -48,7 +48,11 @@ public:
 	// Добавить объект с нулевым приоритетом
 	// с помощью перемещения и вернуть его идентификатор
 	Id Add(T object) {
-		//todo
+		Id id = elements_count++;
+		data.push_back(idx_prior(id));
+		push_heap(data.begin(), data.end());
+		objs[id] = object; // fixme
+		return id;
 	}
 
 	// Добавить все элементы диапазона [range_begin, range_end)
@@ -57,18 +61,20 @@ public:
 	template <typename ObjInputIt, typename IdOutputIt>
 	void Add(ObjInputIt range_begin, ObjInputIt range_end,
 			 IdOutputIt ids_begin) {
-		//todo
+		for (auto it = range_begin; it != range_end; ++it) {
+			*ids_begin++ = Add(*range_begin);
+		}
 	}
 
 	// Определить, принадлежит ли идентификатор какому-либо
 	// хранящемуся в контейнере объекту
 	bool IsValid(Id id) const {
-		//todo
+		return objs.find(id) != objs.end();
 	}
 
 	// Получить объект по идентификатору
 	const T& Get(Id id) const {
-		//todo
+		return objs[id];
 	}
 
 	// Увеличить приоритет объекта на 1
@@ -87,8 +93,9 @@ public:
 	}
 
 private:
-	std::vector<s_collection_data<T>> data;
-	unsigned long long elements_count;
+	std::vector<idx_prior> data;
+	std::map<Id, T> objs;
+	Id elements_count;
 	// Приватные поля и методы
 };
 
