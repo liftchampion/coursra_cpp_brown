@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "test_runner.h"
+#include "profile.h"
 #include <iostream>
 #include <iterator>
 #include <memory>
@@ -44,7 +45,7 @@ public:
 	void Add(ObjInputIt range_begin, ObjInputIt range_end,
 			 IdOutputIt ids_begin) {
 		for (auto it = range_begin; it != range_end; ++it) {
-			*ids_begin++ = Add(move(*range_begin));
+			*ids_begin++ = Add(move(*it));
 		}
 	}
 
@@ -126,9 +127,33 @@ public:
 
 void TestNoCopy() {
 	PriorityCollection<StringNonCopyable> strings;
-	const auto white_id = strings.Add("white");
+	const auto white_id = strings.Add("");
 	const auto yellow_id = strings.Add("yellow");
 	const auto red_id = strings.Add("red");
+
+
+	PriorityCollection<string> strings2;
+	vector<string> strs = {"hello", "brave", "world"};
+	vector<size_t> ids;
+
+	strings2.Add(strs.begin(), strs.end(), back_inserter(ids));
+
+
+	for (auto id : ids) {
+		cout << id << " ";
+	}
+	cout << endl;
+	for (auto id : ids) {
+		cout << strings2.Get(id) << " ";
+	}
+	cout << endl;
+	cout << strings2.Get(1) <<  endl;
+	cout << strings2.Get(2) <<  endl;
+	cout << strings2.Get(3) <<  endl;
+
+	cout << strings.Get(red_id) << endl;
+	cout << strings.IsValid(red_id) << endl;
+	cout << strings.IsValid(6u) << endl;
 
 	strings.Promote(yellow_id);
 	for (int i = 0; i < 2; ++i) {
@@ -140,25 +165,59 @@ void TestNoCopy() {
 		ASSERT_EQUAL(item.first, "red");
 		ASSERT_EQUAL(item.second, 2);
 	}
+	cout << "~~~1~~~" << endl;
 	{
 		const auto item = strings.PopMax();
 		ASSERT_EQUAL(item.first, "yellow");
 		ASSERT_EQUAL(item.second, 2);
 	}
+	cout << "~~~2~~~" << endl;
 	{
 		const auto item = strings.PopMax();
-		ASSERT_EQUAL(item.first, "white");
+		ASSERT_EQUAL(item.first, "");
 		ASSERT_EQUAL(item.second, 0);
 	}
+	cout << "~~~3~~~" << endl;
 }
-
-#include <mutex>
 
 int main() {
 	TestRunner tr;
 	RUN_TEST(tr, TestNoCopy);
 
-	//strings.Add(move(m));
+	PriorityCollection<int> strings;
+	{
+		LOG_DURATION("add 500000");
+		for (int i = 0; i < 500000; i++) {
+			strings.Add(i);
+		}
+	}
+	{
+		LOG_DURATION("pop 500000");
+		for (int i = 0; i < 500000; i++) {
+			strings.PopMax();
+		}
+	}
 
+	{
+		LOG_DURATION("pop bottom total");
+		PriorityCollection<int> strings;
+		auto hello_id = strings.Add(-1);
+		strings.Promote(hello_id);
+		{
+			LOG_DURATION("add in pop bottom");
+			for (int i = 0; i < 1000000; i++) {
+				strings.Add(i);
+			}
+		}
+		{
+			LOG_DURATION("is_valid");
+			for (int i = 0; i < 1000000; i++) {
+				strings.IsValid(hello_id);
+			}
+		}
+		LOG_DURATION("pop bottom");
+		strings.PopMax();
+	}
 	return 0;
 }
+
