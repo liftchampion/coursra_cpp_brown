@@ -43,7 +43,6 @@ public:
 		new_node.key() = new_node.mapped().rc.id;
 
 		const auto it_and_ret = id_to_data.insert(move(new_node));
-		auto extracted = id_to_data.extract(record.id);
 		const auto& record_data = it_and_ret.position->second;
 		record_data.time_it =
 				time_to_id.insert({record_data.rc.timestamp, record_data.rc.id});
