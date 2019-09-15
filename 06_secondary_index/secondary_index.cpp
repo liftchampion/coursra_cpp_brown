@@ -19,9 +19,9 @@ struct Record {
 // Реализуйте этот класс
 class Database {
 private:
-	multimap<int, string_view> time_to_id;
-	multimap<int, string_view> karma_to_id;
-	multimap<string_view, string_view> user_to_id;
+	multimap<int, const Record&> time_to_id;
+	multimap<int, const Record&> karma_to_id;
+	multimap<string_view, const Record&> user_to_id;
 	struct RecordData {
 		explicit RecordData(const Record& rc) : rc(rc) {}
 		Record rc;
@@ -29,27 +29,23 @@ private:
 		mutable decltype(karma_to_id.begin()) karma_it = {};
 		mutable decltype(user_to_id.begin()) user_it = {};
 	};
-	unordered_map<string_view, RecordData> id_to_data;
+	unordered_map<string, RecordData> id_to_data;
 public:
 	bool Put(const Record& record)
 	{
-		if (id_to_data.find(record.id) == id_to_data.end()) {
+		auto [iter, insertion_ok] = id_to_data.try_emplace(record.id, record);
+		if (!insertion_ok) {
 			return false;
 		}
 
-		RecordData rd(record);
-		unordered_map<string_view, RecordData>::node_type new_node;
-		new_node.mapped() = move(rd);
-		new_node.key() = new_node.mapped().rc.id;
-
-		const auto it_and_ret = id_to_data.insert(move(new_node));
-		const auto& record_data = it_and_ret.position->second;
+		const auto& record_data = iter->second;
+		const auto& record_local = record_data.rc;
 		record_data.time_it =
-				time_to_id.insert({record_data.rc.timestamp, record_data.rc.id});
+				time_to_id.emplace(record_local.timestamp, record_local);
 		record_data.karma_it =
-				karma_to_id.insert({record_data.rc.karma, record_data.rc.id});
+				karma_to_id.emplace(record_local.karma, record_local);
 		record_data.user_it =
-				user_to_id.insert({record_data.rc.user, record_data.rc.id});
+				user_to_id.emplace(record_local.user, record_local);
 		return true;
 	}
 	const Record* GetById(const string& id) const {
@@ -77,7 +73,7 @@ public:
 		auto begin = time_to_id.lower_bound(low);
 		const auto end = time_to_id.end();
 		while (begin != end && begin->first <= high &&
-			callback(id_to_data.at(begin->second).rc)) {
+			callback(begin->second)) {
 			++begin;
 		}
 	}
@@ -87,7 +83,7 @@ public:
 		auto begin = karma_to_id.lower_bound(low);
 		const auto end = karma_to_id.end();
 		while (begin != end && begin->first <= high &&
-			   callback(id_to_data.at(begin->second).rc)) {
+			   callback(begin->second)) {
 			++begin;
 		}
 	}
@@ -97,7 +93,7 @@ public:
 		auto begin = user_to_id.find(user);
 		const auto end = user_to_id.end();
 		while (begin != end && begin->first == user &&
-			   callback(id_to_data.at(begin->second).rc)) {
+			   callback(begin->second)) {
 			++begin;
 		}
 	}
