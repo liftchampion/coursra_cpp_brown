@@ -25,19 +25,20 @@ food=2500
 sport=12000
 travel=23400
 clothes=5200
-
 [august]
 food=3250
 sport=10000
 travel=0
 clothes=8300
 jewelery=25000
+[g gggggggggggggggggggggggggg]
+food=3250
 )"
 	);
 
 	const Ini::Document doc = Ini::Load(input);
 
-	ASSERT_EQUAL(doc.SectionCount(), 2u);
+	ASSERT_EQUAL(doc.SectionCount(), 3u);
 
 	const Ini::Section expected_july = {
 			{"food", "2500"},
@@ -53,9 +54,13 @@ jewelery=25000
 			{"clothes", "8300"},
 			{"jewelery", "25000"},
 	};
+	const Ini::Section expected_new = {
+			{"food", "3250"}
+	};
 
 	ASSERT_EQUAL(doc.GetSection("july"), expected_july);
 	ASSERT_EQUAL(doc.GetSection("august"), expected_august);
+	ASSERT_EQUAL(doc.GetSection("g gggggggggggggggggggggggggg"), expected_new);
 }
 
 void TestDocument() {

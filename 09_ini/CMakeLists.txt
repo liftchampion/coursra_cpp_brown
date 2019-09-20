@@ -5,4 +5,4 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(../dev)
 
-add_executable(09_ini test_ini.cpp ini.h)
+add_executable(09_ini test_ini.cpp ini.h ini.cpp)
