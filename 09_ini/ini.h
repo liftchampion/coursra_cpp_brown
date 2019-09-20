@@ -10,9 +10,24 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
 
+#include <unordered_map>
 
-#ifndef INI_H
-#define INI_H
+using namespace std;
 
-#endif //INI_H
+namespace Ini {
+	using Section = unordered_map<string, string>;
+
+	class Document {
+	public:
+		Section& AddSection(string name);
+		const Section& GetSection(const string& name) const;
+		size_t SectionCount() const;
+
+	private:
+		unordered_map<string, Section> sections;
+	};
+
+	Document Load(istream& input);
+}

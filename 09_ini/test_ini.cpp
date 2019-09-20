@@ -20,7 +20,7 @@ using namespace std;
 
 void TestLoadIni() {
 	istringstream input(
-			R"([july]
+R"([july]
 food=2500
 sport=12000
 travel=23400
@@ -119,11 +119,21 @@ void TestDuplicateSections() {
 	ASSERT_EQUAL(doc.GetSection("one"), expected);
 }
 
+#include <fstream>
+
 int main() {
 	TestRunner tr;
 	RUN_TEST(tr, TestLoadIni);
 	RUN_TEST(tr, TestDocument);
 	RUN_TEST(tr, TestUnknownSection);
 	RUN_TEST(tr, TestDuplicateSections);
+
+
+
+	//fstream fs;
+	//fs.open("gg1.ini", std::fstream::in);
+
+	//Ini::Document doc = Ini::Load(cin);
+
 	return 0;
 }
