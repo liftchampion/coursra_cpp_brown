@@ -11,29 +11,67 @@ using namespace std;
 // Определите классы Unit, Building, Tower и Fence так, чтобы они наследовались от
 // GameObject и реализовывали его интерфейс.
 
-class Unit {
-public:
-  explicit Unit(geo2d::Point position);
+template <typename T>
+struct Collider : GameObject {
+	bool Collide(const GameObject& that) const final {
+// Статически приводим тип *this к типу const T&, потому что мы знаем,
+// что T — наш наследник (см. ниже)
+		return (this != &that) ? that.CollideWith(static_cast<const T&>(*this)) : true;
+	}
+	bool CollideWith(const Unit& that)     const final;
+	bool CollideWith(const Building& that) const final;
+	bool CollideWith(const Tower& that)    const final;
+	bool CollideWith(const Fence& that)    const final;
 };
 
-class Building {
+class Unit final : public Collider<Unit> {
 public:
-  explicit Building(geo2d::Rectangle geometry);
+    explicit Unit(geo2d::Point position)  : geometry_(position) {}
+	const geo2d::Point geometry_;
 };
 
-class Tower {
+class Building final : public Collider<Building> {
 public:
-  explicit Tower(geo2d::Circle geometry);
+    explicit Building(geo2d::Rectangle geometry) : geometry_(geometry) {}
+	const geo2d::Rectangle geometry_;
 };
 
-class Fence {
+class Tower final : public Collider<Tower> {
 public:
-  explicit Fence(geo2d::Segment geometry);
+    explicit Tower(geo2d::Circle geometry) : geometry_(geometry) {}
+	const geo2d::Circle geometry_;
 };
+
+class Fence final : public Collider<Fence> {
+public:
+    explicit Fence(geo2d::Segment geometry) : geometry_(geometry) {}
+	const geo2d::Segment geometry_;
+};
+
+template <typename T>
+bool Collider<T>::CollideWith(const Unit& that) const  {
+	return geo2d::Collide(static_cast<const T&>(*this).geometry_, that.geometry_);
+}
+
+template <typename T>
+bool Collider<T>::CollideWith(const Building& that) const  {
+	return geo2d::Collide(static_cast<const T&>(*this).geometry_, that.geometry_);
+}
+
+template <typename T>
+bool Collider<T>::CollideWith(const Tower& that) const  {
+	return geo2d::Collide(static_cast<const T&>(*this).geometry_, that.geometry_);
+}
+
+template <typename T>
+bool Collider<T>::CollideWith(const Fence& that) const  {
+	return geo2d::Collide(static_cast<const T&>(*this).geometry_, that.geometry_);
+}
 
 // Реализуйте функцию Collide из файла GameObject.h
 
 bool Collide(const GameObject& first, const GameObject& second) {
+	return first.Collide(second);
 }
 
 void TestAddingNewObjectOnMap() {
